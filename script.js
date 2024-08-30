@@ -1,63 +1,61 @@
-document.addEventListener('DOMContentLoaded', function () {
-    const form = document.getElementById('preferenceForm');
-    const fontSizeInput = document.getElementById('fontsize');
-    const fontColorInput = document.getElementById('fontcolor');
+// script.js
+document.addEventListener('DOMContentLoaded', () => {
+  const fontsizeInput = document.getElementById('fontsize');
+  const fontcolorInput = document.getElementById('fontcolor');
+  const saveButton = document.querySelector('input[type="submit"]');
 
-    if (form && fontSizeInput && fontColorInput) {
-        // Function to set the body's font size and color based on the provided values
-        function applyPreferences(fontSize, fontColor) {
-            document.documentElement.style.setProperty('--fontsize', fontSize + 'px');
-            document.documentElement.style.setProperty('--fontcolor', fontColor);
-        }
+  // Load preferences from cookies
+  function loadPreferences() {
+    const fontsize = getCookie('fontsize');
+    const fontcolor = getCookie('fontcolor');
 
-        // Function to set a cookie
-        function setCookie(name, value, days) {
-            const date = new Date();
-            date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-            const expires = "expires=" + date.toUTCString();
-            document.cookie = name + "=" + value + ";" + expires + ";path=/";
-        }
-
-        // Function to get a cookie
-        function getCookie(name) {
-            const cname = name + "=";
-            const decodedCookie = decodeURIComponent(document.cookie);
-            const cookieArr = decodedCookie.split(';');
-            for (let i = 0; i < cookieArr.length; i++) {
-                let cookie = cookieArr[i].trim();
-                if (cookie.indexOf(cname) === 0) {
-                    return cookie.substring(cname.length, cookie.length);
-                }
-            }
-            return "";
-        }
-
-        // Apply saved preferences when the page loads
-        const savedFontSize = getCookie("fontsize");
-        const savedFontColor = getCookie("fontcolor");
-
-        if (savedFontSize) {
-            fontSizeInput.value = savedFontSize;
-            applyPreferences(savedFontSize, savedFontColor || '#000000');
-        }
-
-        if (savedFontColor) {
-            fontColorInput.value = savedFontColor;
-        }
-
-        // Save preferences when the form is submitted
-        form.addEventListener('submit', function (e) {
-            e.preventDefault();
-            const fontSize = fontSizeInput.value;
-            const fontColor = fontColorInput.value;
-
-            setCookie("fontsize", fontSize, 365); // Save for 1 year
-            setCookie("fontcolor", fontColor, 365);
-
-            applyPreferences(fontSize, fontColor);
-            alert("Preferences saved!");
-        });
-    } else {
-        console.error('Form or input elements not found.');
+    if (fontsize) {
+      fontsizeInput.value = fontsize;
+      document.body.style.fontSize = fontsize + 'px';
     }
+    if (fontcolor) {
+      fontcolorInput.value = fontcolor;
+      document.body.style.color = fontcolor;
+    }
+  }
+
+  // Save preferences to cookies
+  function savePreferences() {
+    const fontsize = fontsizeInput.value;
+    const fontcolor = fontcolorInput.value;
+
+    setCookie('fontsize', fontsize, 365);
+    setCookie('fontcolor', fontcolor, 365);
+
+    document.body.style.fontSize = fontsize + 'px';
+    document.body.style.color = fontcolor;
+  }
+
+  function setCookie(name, value, days) {
+    let expires = '';
+    if (days) {
+      const date = new Date();
+      date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+      expires = '; expires=' + date.toUTCString();
+    }
+    document.cookie = name + '=' + (value || '') + expires + '; path=/';
+  }
+
+  function getCookie(name) {
+    const nameEQ = name + '=';
+    const ca = document.cookie.split(';');
+    for (let i = 0; i < ca.length; i++) {
+      let c = ca[i];
+      while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+      if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+    }
+    return null;
+  }
+
+  saveButton.addEventListener('click', (e) => {
+    e.preventDefault();
+    savePreferences();
+  });
+
+  loadPreferences();
 });
